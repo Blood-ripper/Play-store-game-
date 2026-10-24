@@ -1,0 +1,53 @@
+name: farm_rush
+description: "Farm Rush — a multiplayer farming arcade game (Flutter + Flame + Firebase)."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.27.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Game engine
+  flame: ^1.18.0
+
+  # State management
+  provider: ^6.1.2
+
+  # Backend (Firebase). The app also runs in LOCAL mode with these present
+  # but unused until AppConfig.firebaseEnabled is true.
+  firebase_core: ^2.27.0
+  firebase_auth: ^4.17.8
+  cloud_firestore: ^4.15.8
+  google_sign_in: ^6.2.1
+
+  # In-app purchases (Google Play Billing)
+  in_app_purchase: ^3.1.13
+
+  # Local persistence / offline cache
+  shared_preferences: ^2.2.2
+
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/logo/
+  # Bundle a chunky rounded font for the farm look (add the files, then
+  # uncomment). Falls back to the platform default otherwise.
+  # fonts:
+  #   - family: Baloo
+  #     fonts:
+  #       - asset: assets/fonts/Baloo2-Bold.ttf
+  #         weight: 700
+  #       - asset: assets/fonts/Baloo2-ExtraBold.ttf
+  #         weight: 800

@@ -1,0 +1,56 @@
+rules_version = '2';
+
+// Security rules for Farm Rush.
+// Players own their profile; the leaderboard is world-readable but a player
+// may only write their OWN row, and scores can only be written by the trusted
+// Cloud Function (server) OR self-reported with a reasonable cap (anti-cheat
+// is finished server-side — see functions/index.js).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Player profiles: only the owner reads/writes.
+    match /players/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid);
+      // Clients may update gameplay fields but NOT currency granted by IAP —
+      // those are written only by the Cloud Function via the Admin SDK, which
+      // bypasses these rules.
+      allow update: if isOwner(uid)
+        && !( 'vip' in request.resource.data
+              && request.resource.data.vip != resource.data.vip );
+    }
+
+    // Handle uniqueness index.
+    match /handles/{handle} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid;
+    }
+
+    // Leaderboard: everyone can read; a player writes only their own row and
+    // only a higher score (final cap/validation is enforced server-side).
+    match /leaderboard/{uid} {
+      allow read: if true;
+      allow write: if isOwner(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.score is int
+        && request.resource.data.score >= 0
+        && request.resource.data.score <= 10000000
+        && (!('score' in resource.data)
+            || request.resource.data.score >= resource.data.score);
+    }
+
+    // Purchase receipts are written by clients, verified by the Cloud Function.
+    match /receipts/{receiptId} {
+      allow read: if false;
+      allow create: if isSignedIn();
+    }
+  }
+}
